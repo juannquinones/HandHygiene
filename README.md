@@ -46,7 +46,7 @@ Este proyecto está bajo una licencia que permite su uso libre y sin fines comer
 
 ## Estado del Proyecto
 
-Este proyecto se encuentra en su versión inicial (v1.0.0) y está en constante desarrollo. Para ver las actualizaciones más recientes, visita la sección de [releases](https://github.com/juannquinones/HigieneManos/tree/main/Releases).
+Este proyecto se encuentra en su versión inicial (v1.0.0) y está en constante desarrollo. Para ver las actualizaciones más recientes, visita la sección de [Releases](https://github.com/juannquinones/HigieneManos/tree/main/Releases)
 
 ## Contacto
 
