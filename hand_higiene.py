@@ -11,7 +11,7 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Para ocultar los mensajes de adverte
 # Configurar el uso de la GPU
 #gpus = tf.config.experimental.list_physical_devices('GPU')
 
-with open('avianca.pkl', 'rb') as f:
+with open('modelo.pkl', 'rb') as f:
     model = pickle.load(f)
 
 mp_drawing = mp.solutions.drawing_utils

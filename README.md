@@ -30,11 +30,8 @@ El sistema es ideal para cualquier persona interesada en mejorar o verificar su 
 
 ## Datos de Entrenamiento y Pruebas
 
-Los conjuntos de datos utilizados para entrenar y probar este modelo estarán disponibles en este repositorio. Para acceder a ellos, visite la sección [Datos](URL-a-los-datos) del repositorio.
+Los conjuntos de datos utilizados para entrenar y probar este modelo estarán disponibles en este repositorio. Para acceder a ellos, visite la sección [Datos](https://github.com/juannquinones/HigieneManos/tree/main/Data) del repositorio.
 
-## Contribución
-
-Si estás interesado en contribuir a este proyecto, por favor revisa el archivo `CONTRIBUTING.md` para más detalles sobre cómo puedes hacerlo. Valoramos tus aportes y estamos abiertos a tus ideas y sugerencias.
 
 ## Autores
 
@@ -49,11 +46,11 @@ Este proyecto está bajo una licencia que permite su uso libre y sin fines comer
 
 ## Estado del Proyecto
 
-Este proyecto se encuentra en su versión inicial (v1.0.0) y está en constante desarrollo. Para ver las actualizaciones más recientes, visita la sección de [releases](URL-a-releases).
+Este proyecto se encuentra en su versión inicial (v1.0.0) y está en constante desarrollo. Para ver las actualizaciones más recientes, visita la sección de [releases](https://github.com/juannquinones/HigieneManos/tree/main/Releases).
 
 ## Contacto
 
-Para soporte, colaboraciones o cualquier otra consulta, por favor contacta a Juan Nicolas Quiñones en juannquinonesr@gmail.com.
+Para soporte, colaboraciones o cualquier otra consulta, por favor contacta a Juan Nicolas Quiñones en juannquinonesr@gmail.com 
 
 ---
 
