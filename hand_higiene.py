@@ -5,13 +5,14 @@ import numpy as np
 import pickle 
 import time 
 import os
+
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Para ocultar los mensajes de advertencia de TensorFlow
 
 #import tensorflow as tf
 # Configurar el uso de la GPU
 #gpus = tf.config.experimental.list_physical_devices('GPU')
 
-with open('modelo.pkl', 'rb') as f:
+with open('Data/modelo.pkl', 'rb') as f:
     model = pickle.load(f)
 
 mp_drawing = mp.solutions.drawing_utils

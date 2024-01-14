@@ -1,0 +1,7 @@
+This work contains two parts: the library for train and use the model, and the app designed to use the model with a conftable interface.
+
+The library HandHygiene has fuctions and classes for:
+
+1. Read the data from videos or using the video camera.
+2. Process the video to obtain landmarks with mediapipe and transform them for posterior training and inference.
+3. Train the model and use it.
