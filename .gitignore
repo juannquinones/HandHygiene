@@ -1,0 +1,4 @@
+# .gitignore
+
+# Ignore all files in Data/Videos directory
+Data/Videos/*
