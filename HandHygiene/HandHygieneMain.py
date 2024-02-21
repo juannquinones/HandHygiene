@@ -102,42 +102,46 @@ class HandHygineModel:
             else:
                 #print('Select a valid mode')
                 return False, None, None, None
+        if image is None:
+            print('Error while reading images ')
+            return False, None, None, None
+        else: 
 
-        results = self.hands.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-            
-        height, width, _ = image.shape
-        if results.multi_hand_landmarks:
-            #if return_image:
-                #for hand_landmarks in results.multi_hand_landmarks:
-                 #   self.mp_drawing.draw_landmarks(
-                  #  image,
-                   # hand_landmarks),
-                    #self.mp_hands.HAND_CONNECTIONS,self.mp_drawing.DrawingSpec(color=(0,255,255), thickness=2, circle_radius=3),
-                    #self.mp_self.hands.HAND_CONNECTIONS,self.mp_drawing.DrawingSpec(color=(0,255,255), thickness=2, circle_radius=3),
-                    #self.mp_drawing.DrawingSpec(color=(255,0,255), thickness=2, circle_radius=3))
+            results = self.hands.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+                
+            #height, width, _ = image.shape
+            if results.multi_hand_landmarks:
+                #if return_image:
+                    #for hand_landmarks in results.multi_hand_landmarks:
+                    #   self.mp_drawing.draw_landmarks(
+                    #  image,
+                    # hand_landmarks),
+                        #self.mp_hands.HAND_CONNECTIONS,self.mp_drawing.DrawingSpec(color=(0,255,255), thickness=2, circle_radius=3),
+                        #self.mp_self.hands.HAND_CONNECTIONS,self.mp_drawing.DrawingSpec(color=(0,255,255), thickness=2, circle_radius=3),
+                        #self.mp_drawing.DrawingSpec(color=(255,0,255), thickness=2, circle_radius=3))
 
-            # verificar primero la cantidad de landmarks
-            if len(results.multi_hand_landmarks) == 1:
-                variable =results.multi_handedness[0].classification[0].label
-            elif len(results.multi_hand_landmarks) == 2:
-                variable = 'Both'
-            else:
-                variable = None
-            
-            if variable =="Left":
-                right_hand_rows = np.zeros([21,3])
-                left_hand_rows = np.array([[landmark.x, landmark.y,landmark.z] for landmark in results.multi_hand_landmarks[0].landmark])
-            elif variable == "Right":
-                left_hand_rows = np.zeros([21,3])
-                right_hand_rows = np.array([[landmark.x, landmark.y, landmark.z] for landmark in results.multi_hand_landmarks[0].landmark])
-            elif variable == "Both":
-                right_hand_rows = np.array([[landmark.x, landmark.y,landmark.z] for landmark in results.multi_hand_landmarks[0].landmark])
-                left_hand_rows = np.array([[landmark.x, landmark.y, landmark.z] for landmark in results.multi_hand_landmarks[1].landmark])
-            else:
-                print('Error, se reconocen mas de dos manos')
-                pass
-            return True, image, right_hand_rows, left_hand_rows 
-        return False, None, None, None
+                # verificar primero la cantidad de landmarks
+                if len(results.multi_hand_landmarks) == 1:
+                    variable =results.multi_handedness[0].classification[0].label
+                elif len(results.multi_hand_landmarks) == 2:
+                    variable = 'Both'
+                else:
+                    variable = None
+                
+                if variable =="Left":
+                    right_hand_rows = np.zeros([21,3])
+                    left_hand_rows = np.array([[landmark.x, landmark.y,landmark.z] for landmark in results.multi_hand_landmarks[0].landmark])
+                elif variable == "Right":
+                    left_hand_rows = np.zeros([21,3])
+                    right_hand_rows = np.array([[landmark.x, landmark.y, landmark.z] for landmark in results.multi_hand_landmarks[0].landmark])
+                elif variable == "Both":
+                    right_hand_rows = np.array([[landmark.x, landmark.y,landmark.z] for landmark in results.multi_hand_landmarks[0].landmark])
+                    left_hand_rows = np.array([[landmark.x, landmark.y, landmark.z] for landmark in results.multi_hand_landmarks[1].landmark])
+                else:
+                    print('Error, se reconocen mas de dos manos')
+                    pass
+                return True, image, right_hand_rows, left_hand_rows 
+            return False, None, None, None
 
     def predict_hygiene_step(self, normalized_points, model):
         self.step_prediction_model = True
@@ -146,9 +150,11 @@ class HandHygineModel:
         else:
             #prediction = model_trained.predict()
             step_prediction_model = model.predict(normalized_points.reshape(1,-1))[0]
+            class_probabilities = np.argmax(model.predict_proba(normalized_points)[0])
+            if class_probabilities < 0.5:
+                step_prediction_model = "Nan"
         return step_prediction_model
         
-
     def set_model(self, model):
         with open('/Users/juannquinones/Library/CloudStorage/OneDrive-ESCUELACOLOMBIANADEINGENIERIAJULIOGARAVITO/Nico/Manos/HigieneManos/Data/Models/'+ str(model)+'.pkl', 'rb') as file:
             loaded_model = pickle.load(file)

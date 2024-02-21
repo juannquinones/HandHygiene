@@ -16,7 +16,7 @@ cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 mp_hands = mp.solutions.hands
-hands = mp_hands.Hands(model_complexity=0, min_detection_confidence=0.4, min_tracking_confidence=0.4, max_num_hands = 2,static_image_mode=True) # modelo
+hands = mp_hands.Hands(model_complexity=0, min_detection_confidence=0.4, min_tracking_confidence=0.4, max_num_hands = 2,static_image_mode=False) # modelo
 
 image_success = True
 hand_model = HandHygineModel(mp_drawing, mp_drawing_styles, mp_hands, hands)
