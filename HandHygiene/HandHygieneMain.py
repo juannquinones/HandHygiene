@@ -143,28 +143,16 @@ class HandHygineModel:
                 return True, image, right_hand_rows, left_hand_rows 
             return False, None, None, None
 
-    def predict_hygiene_step(self, normalized_points, model):
-        self.step_prediction_model = True
+    def predict_hygiene_step(self, normalized_points):
         if self.step_prediction_model is None:
             raise Exception('There is no step_prediction_model. Please set the model using set_model function')
         else:
             #prediction = model_trained.predict()
-            step_prediction_model = model.predict(normalized_points.reshape(1,-1))[0]
-            class_probabilities = np.argmax(model.predict_proba(normalized_points)[0])
+            pred = self.step_prediction_model.predict(normalized_points.reshape(1,-1))[0]
+            class_probabilities = np.argmax(self.step_prediction_model.predict_proba(normalized_points)[0])
             if class_probabilities < 0.5:
-                step_prediction_model = "Nan"
-        return step_prediction_model
-        
-    def set_model(self, model):
-        with open('/Users/juannquinones/Library/CloudStorage/OneDrive-ESCUELACOLOMBIANADEINGENIERIAJULIOGARAVITO/Nico/Manos/HigieneManos/Data/Models/'+ str(model)+'.pkl', 'rb') as file:
-            loaded_model = pickle.load(file)
-            print(loaded_model)
-            print(type(loaded_model))
-
-        #self.step_prediction_model=model
-        return loaded_model
-
-
+                pred = "Nan"
+        return pred
 
     def get_controids(self,hand_rows):
         '''
