@@ -1,8 +1,9 @@
 
 from HandHygieneMain import *
 
-MODEL_PATH = r'D:\\Proyectos\\Hands\\HigieneManos\\Data\\Models\\lr.pkl'
-
+#MODEL_PATH = r'D:\\Proyectos\\Hands\\HigieneManos\\Data\\Models\\rf.pkl'
+#MODEL_PATH ='/Users/juannquinones/Library/CloudStorage/OneDrive-ESCUELACOLOMBIANADEINGENIERIAJULIOGARAVITO/Nico/Manos/HigieneManos/Data/Models/modelo.pkl'
+MODEL_PATH ='avianca.pkl'
 with open(MODEL_PATH, 'rb') as file:
     modelo = pickle.load(file)
 
@@ -15,7 +16,7 @@ cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 mp_hands = mp.solutions.hands
-hands = mp_hands.Hands(model_complexity=0, min_detection_confidence=0.4, min_tracking_confidence=0.4, max_num_hands = 2,static_image_mode=False) # modelo
+hands = mp_hands.Hands(model_complexity=0, min_detection_confidence=0.4, min_tracking_confidence=0.4, max_num_hands = 2,static_image_mode=True) # modelo
 
 image_success = True
 hand_model = HandHygineModel(mp_drawing, mp_drawing_styles, mp_hands, hands, step_prediction_model=modelo)

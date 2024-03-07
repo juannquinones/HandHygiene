@@ -96,6 +96,7 @@ with mp_hands.Hands(model_complexity=0, min_detection_confidence=0.5, min_tracki
             rows[2::3] -= centroid_z
 
             hand_language_class = model.predict(rows.reshape(1,-1))[0]
+            print(hand_language_class)
             prueba = hand_language_class
             cv2.rectangle(image, (0,0), (450, 60), (245, 117, 16), -1)
             #cv2.circle(image, blue_point, radius=25, color=(255, 0, 0), thickness=-1)  # El color (255, 0, 0) representa el azul

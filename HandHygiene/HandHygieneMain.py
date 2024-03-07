@@ -139,7 +139,7 @@ class HandHygineModel:
                     left_hand_rows = np.array([[landmark.x, landmark.y, landmark.z] for landmark in results.multi_hand_landmarks[1].landmark])
                 else:
                     print('Error, se reconocen mas de dos manos')
-                    pass
+                    return False, None, None, None
                 return True, image, right_hand_rows, left_hand_rows 
             return False, None, None, None
 
