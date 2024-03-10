@@ -2,8 +2,8 @@
 from HandHygieneMain import *
 
 #MODEL_PATH = r'D:\\Proyectos\\Hands\\HigieneManos\\Data\\Models\\rf.pkl'
-#MODEL_PATH ='/Users/juannquinones/Library/CloudStorage/OneDrive-ESCUELACOLOMBIANADEINGENIERIAJULIOGARAVITO/Nico/Manos/HigieneManos/Data/Models/modelo.pkl'
-MODEL_PATH ='avianca.pkl'
+MODEL_PATH ='/Users/juannquinones/Library/CloudStorage/OneDrive-ESCUELACOLOMBIANADEINGENIERIAJULIOGARAVITO/Nico/Manos/HigieneManos/Data/Models/rf_5es_98acc.pkl'
+#MODEL_PATH ='rf_5es_98acc.pkl'
 with open(MODEL_PATH, 'rb') as file:
     modelo = pickle.load(file)
 
@@ -31,7 +31,7 @@ while cap.isOpened() and image_success:
             y=hand_model.predict_hygiene_step(X.reshape(1,-1))
             print(y)
 
-        cv2.putText(image, f"Step: {y}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
+        cv2.putText(image, f"Step: {y}", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 2.5, (255, 255, 255), 2)
     cv2.imshow('Hand step clasiffication in Real Time', image)
 
         #cv2.putText(image, str(round(y[0],1)), (10,40), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)

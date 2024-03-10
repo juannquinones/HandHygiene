@@ -10,6 +10,7 @@ from token import EXACT_TOKEN_TYPES
 from sklearn.metrics import accuracy_score # Accuracy metrics 
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.ensemble import RandomForestClassifier
+from collections import Counter
 import multiprocessing
 import pickle
 
@@ -66,6 +67,7 @@ class HandHygineModel:
         self.mp_hands = mp_hands
         self.hands = hands
         self.step_prediction_model = step_prediction_model
+        self.frames_prediction = [0]*10
 
     def get_landmarks_structure(self, success, image, mode, return_image=True):
         '''
@@ -150,8 +152,14 @@ class HandHygineModel:
             #prediction = model_trained.predict()
             pred = self.step_prediction_model.predict(normalized_points.reshape(1,-1))[0]
             class_probabilities = np.argmax(self.step_prediction_model.predict_proba(normalized_points)[0])
-            if class_probabilities < 0.5:
-                pred = "Nan"
+            def improve_prediction(frames_prediction ,prediction):
+                frames_prediction.pop
+                frames_prediction.insert(prediction)
+                mode = Counter(frames_prediction).most_common(1)[0][0]
+                return mode
+            pred = improve_prediction(self.frames_prediction,class_probabilities)
+            #if class_probabilities < 0.1:
+             #   pred = "Nan"
         return pred
 
     def get_controids(self,hand_rows):
