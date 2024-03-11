@@ -60,14 +60,14 @@ def get_videos_path(root_folder):
     return video_paths
 
 class HandHygineModel:
-    def __init__(self,mp_drawing, mp_drawing_styles, mp_hands, hands, step_prediction_model=None):
-        
+    def __init__(self,mp_drawing, mp_drawing_styles, mp_hands, hands, step_prediction_model=None ):
+        self.frames_prediction =  deque(maxlen=15) 
         self.mp_drawing = mp_drawing
         self.mp_drawing_styles = mp_drawing_styles
         self.mp_hands = mp_hands
         self.hands = hands
         self.step_prediction_model = step_prediction_model
-        self.frames_prediction = [0]*10
+
 
     def get_landmarks_structure(self, success, image, mode, return_image=True):
         '''
@@ -149,18 +149,18 @@ class HandHygineModel:
         if self.step_prediction_model is None:
             raise Exception('There is no step_prediction_model. Please set the model using set_model function')
         else:
-            #prediction = model_trained.predict()
-            pred = self.step_prediction_model.predict(normalized_points.reshape(1,-1))[0]
+            #pred = self.step_prediction_model.predict(normalized_points.reshape(1,-1))[0]
             class_probabilities = np.argmax(self.step_prediction_model.predict_proba(normalized_points)[0])
-            def improve_prediction(frames_prediction ,prediction):
-                frames_prediction.pop
-                frames_prediction.insert(prediction)
-                mode = Counter(frames_prediction).most_common(1)[0][0]
-                return mode
-            pred = improve_prediction(self.frames_prediction,class_probabilities)
+            print('le llega en bruto:  ',self.frames_prediction)
+            self.frames_prediction.appendleft(class_probabilities)
+            print('despues de actualizar hay: ',self.frames_prediction)
+            mode = Counter(self.frames_prediction).most_common(1)[0][0]
+            print('en moda hay', mode)
+            
+            #pred = improve_prediction(self.frames_prediction,class_probabilities)
             #if class_probabilities < 0.1:
              #   pred = "Nan"
-        return pred
+        return mode
 
     def get_controids(self,hand_rows):
         '''
