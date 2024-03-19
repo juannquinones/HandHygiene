@@ -60,7 +60,7 @@ def get_videos_path(root_folder):
     return video_paths
 
 class HandHygineModel:
-    def __init__(self,mp_drawing, mp_drawing_styles, mp_hands, hands, step_prediction_model=None ):
+    def __init__(self,mp_drawing, mp_drawing_styles, mp_hands, hands, step_prediction_model=None):
         self.frames_prediction =  deque(maxlen=15) 
         self.mp_drawing = mp_drawing
         self.mp_drawing_styles = mp_drawing_styles
@@ -150,13 +150,16 @@ class HandHygineModel:
             raise Exception('There is no step_prediction_model. Please set the model using set_model function')
         else:
             #pred = self.step_prediction_model.predict(normalized_points.reshape(1,-1))[0]
-            class_probabilities = np.argmax(self.step_prediction_model.predict_proba(normalized_points)[0])
+            class_probabilities = self.step_prediction_model.predict_proba(normalized_points)[0]
+            if np.max(class_probabilities) < 0.1:
+                return None
+            argmax_class = np.argmax(class_probabilities)
             print('le llega en bruto:  ',self.frames_prediction)
-            self.frames_prediction.appendleft(class_probabilities)
+            self.frames_prediction.appendleft(argmax_class)
             print('despues de actualizar hay: ',self.frames_prediction)
             mode = Counter(self.frames_prediction).most_common(1)[0][0]
             print('en moda hay', mode)
-            
+
             #pred = improve_prediction(self.frames_prediction,class_probabilities)
             #if class_probabilities < 0.1:
              #   pred = "Nan"

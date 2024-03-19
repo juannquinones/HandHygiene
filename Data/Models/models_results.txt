@@ -1,0 +1,58 @@
+Best Hyperparameters for rf  are:  {'classifier__bootstrap': False, 'classifier__max_depth': None, 'classifier__max_features': 'sqrt', 'classifier__min_samples_leaf': 1, 'classifier__min_samples_split': 2, 'classifier__n_estimators': 15}
+
+ rf  Results:
+Accuracy: 0.9846422338568935
+Classification Report:
+               precision    recall  f1-score   support
+
+         1.0       0.99      0.96      0.97       474
+         2.0       0.99      0.99      0.99       503
+         3.0       0.99      1.00      0.99       452
+         4.0       0.99      1.00      0.99       513
+         5.0       0.96      0.97      0.97       424
+         6.0       0.99      0.99      0.99       499
+
+    accuracy                           0.98      2865
+   macro avg       0.98      0.98      0.98      2865
+weighted avg       0.98      0.98      0.98      2865
+
+Model saved as rf.pkl
+Best Hyperparameters for lr  are:  {'classifier__C': 100, 'classifier__max_iter': 5000}
+
+ lr  Results:
+Accuracy: 0.9766143106457242
+Classification Report:
+               precision    recall  f1-score   support
+
+         1.0       0.97      0.95      0.96       474
+         2.0       0.99      0.99      0.99       503
+         3.0       0.99      0.99      0.99       452
+         4.0       0.99      0.99      0.99       513
+         5.0       0.96      0.96      0.96       424
+         6.0       0.96      0.97      0.97       499
+
+    accuracy                           0.98      2865
+   macro avg       0.98      0.98      0.98      2865
+weighted avg       0.98      0.98      0.98      2865
+
+Model saved as lr.pkl
+
+Best Hyperparameters for svm  are:  {'classifier__C': 1, 'classifier__coef0': 1.0, 'classifier__degree': 2, 'classifier__gamma': 0.1, 'classifier__kernel': 'poly'}
+
+ svm  Results:
+Accuracy: 0.9905759162303664
+Classification Report:
+               precision    recall  f1-score   support
+
+         1.0       0.99      0.98      0.98       474
+         2.0       0.99      1.00      0.99       503
+         3.0       1.00      1.00      1.00       452
+         4.0       1.00      0.99      1.00       513
+         5.0       0.98      0.98      0.98       424
+         6.0       0.99      0.99      0.99       499
+
+    accuracy                           0.99      2865
+   macro avg       0.99      0.99      0.99      2865
+weighted avg       0.99      0.99      0.99      2865
+
+Model saved as svm.pkl
