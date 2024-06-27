@@ -11,6 +11,7 @@ from sklearn.metrics import accuracy_score # Accuracy metrics
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.ensemble import RandomForestClassifier
 from collections import Counter
+import time
 import multiprocessing
 import pickle
 
@@ -67,7 +68,6 @@ class HandHygineModel:
         self.mp_hands = mp_hands
         self.hands = hands
         self.step_prediction_model = step_prediction_model
-
 
     def get_landmarks_structure(self, success, image, mode, return_image=True):
         '''
@@ -151,15 +151,11 @@ class HandHygineModel:
         else:
             #pred = self.step_prediction_model.predict(normalized_points.reshape(1,-1))[0]
             class_probabilities = self.step_prediction_model.predict_proba(normalized_points)[0]
-            if np.max(class_probabilities) < 0.1:
+            if np.max(class_probabilities) < 0.2:
                 return None
             argmax_class = np.argmax(class_probabilities)
-            print('le llega en bruto:  ',self.frames_prediction)
             self.frames_prediction.appendleft(argmax_class)
-            print('despues de actualizar hay: ',self.frames_prediction)
             mode = Counter(self.frames_prediction).most_common(1)[0][0]
-            print('en moda hay', mode)
-
             #pred = improve_prediction(self.frames_prediction,class_probabilities)
             #if class_probabilities < 0.1:
              #   pred = "Nan"

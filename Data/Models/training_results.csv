@@ -1,0 +1,25 @@
+Model,Accuracy,Precision,Recall,F1-Score,"Training Time 
+(seconds)",Best Params,,,,,
+lr,0.977,0.977,0.977,0.977,70.548,"{'classifier__C': 100,
+ 'classifier__max_iter': 5000}",,,,,
+rf,0.989,0.989,0.989,0.989,1393.728,"{'classifier__bootstrap': False,
+ 'classifier__max_depth': None, 'classifier__max_features': 'sqrt', 'classifier__min_samples_leaf': 1, 'classifier__min_samples_split': 2, 'classifier__n_estimators': 15}",,,,,
+svm,0.991,0.991,0.991,0.991,2222.333,"{'classifier__C': 1,
+ 'classifier__coef0': 1.0, 'classifier__degree': 2, 'classifier__gamma': 0.1, 'classifier__kernel': 'poly'}",,,,,
+,,,,,,,,,,,
+,,,,,,,,,,,
+,,,,,,,,,,,
+,,,,,,,,,,,
+,,,,,,,,,,,
+,,,,,,,,,,,
+,,,,,,,,,,,
+,,,,,,,,,,,
+,,,,,,,,,,,
+,,,,,,,,,,,
+,,,,,,,,,,,
+,,,,,,,,,,,
+,,,,,,Model,Accuracy,Precision,Recall,F1-Score,"Inference Time
+ (seconds)"
+,,,,,,lr,0.989,0.989,0.989,0.989,0.004
+,,,,,,rf,1,1,1,1,0.005
+,,,,,,svm,0.999,0.999,0.999,0.999,0.142
