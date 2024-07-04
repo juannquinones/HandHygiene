@@ -1,0 +1,6 @@
+Model,Accuracy,Precision,Recall,F1-Score,"Inference Time
+ (seconds)","Mean Frame Inference Time
+ (seconds)"
+LR,0.982,0.982,0.982,0.982,0.002,0.001
+RF,0.995,0.995,0.995,0.995,0.005,0.001
+SVM,0.997,0.997,0.997,0.997,0.079,0.001

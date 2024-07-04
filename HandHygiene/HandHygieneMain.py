@@ -1,22 +1,8 @@
-import pandas as pd
-import csv
 import os
 import re
 import numpy as np
-import pandas as pd
 import cv2
-import mediapipe as mp
-from token import EXACT_TOKEN_TYPES
-from sklearn.metrics import accuracy_score # Accuracy metrics 
-from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.ensemble import RandomForestClassifier
-from collections import Counter
-import time
-import multiprocessing
-import pickle
-
-from collections import deque
-import numpy as np
+from collections import Counter, deque
 
 def get_videos_path(root_folder):
     '''
@@ -151,7 +137,7 @@ class HandHygineModel:
         else:
             #pred = self.step_prediction_model.predict(normalized_points.reshape(1,-1))[0]
             class_probabilities = self.step_prediction_model.predict_proba(normalized_points)[0]
-            if np.max(class_probabilities) < 0.2:
+            if np.max(class_probabilities) < 0.25:
                 return None
             argmax_class = np.argmax(class_probabilities)
             self.frames_prediction.appendleft(argmax_class)

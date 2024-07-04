@@ -1,11 +1,16 @@
 Model,Accuracy,Precision,Recall,F1-Score,"Training Time 
 (seconds)",Best Params,,,,,
-lr,0.977,0.977,0.977,0.977,70.548,"{'classifier__C': 100,
- 'classifier__max_iter': 5000}",,,,,
-rf,0.989,0.989,0.989,0.989,1393.728,"{'classifier__bootstrap': False,
- 'classifier__max_depth': None, 'classifier__max_features': 'sqrt', 'classifier__min_samples_leaf': 1, 'classifier__min_samples_split': 2, 'classifier__n_estimators': 15}",,,,,
-svm,0.991,0.991,0.991,0.991,2222.333,"{'classifier__C': 1,
- 'classifier__coef0': 1.0, 'classifier__degree': 2, 'classifier__gamma': 0.1, 'classifier__kernel': 'poly'}",,,,,
+LR,0.977,0.977,0.977,0.977,70.548,"Regularization parameter (C): 100
+ Max iterations (max_iter): 5000",,,,,
+RF,0.989,0.989,0.989,0.989,1393.728,"Bootstrap samples (bootstrap): False,
+Max depth (max_depth): None,
+Max features (max_features): 'sqrt',
+Min samples per leaf (min_samples_leaf): 1, Min samples per split (min_samples_split): 2, Number of estimators (n_estimators): 15",,,,,
+SVM,0.991,0.991,0.991,0.991,2222.333,"	Regularization parameter (C): 1
+Kernel coefficient (coef0): 1.0
+Degree of polynomial kernel (degree): 2
+Gamma (gamma): 0.1
+Kernel type (kernel): 'poly'",,,,,
 ,,,,,,,,,,,
 ,,,,,,,,,,,
 ,,,,,,,,,,,
