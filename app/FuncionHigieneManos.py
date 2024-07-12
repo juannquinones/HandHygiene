@@ -13,7 +13,9 @@ import pickle
 import time 
 import threading
 
-with open(r'C:\Users\Andres Romero\Documents\Proyectos\hands_detection\scripts\RF05062023.pkl', 'rb') as f:
+MODEL_PATH ='/Users/juannquinones/Library/CloudStorage/OneDrive-ESCUELACOLOMBIANADEINGENIERIAJULIOGARAVITO/Nico/Manos/HigieneManos/Data/Models/rf_260624.pkl'
+#MODEL_PATH = r'C:\Users\Andres Romero\Documents\Proyectos\hands_detection\scripts\RF05062023.pkl'
+with open(MODEL_PATH, 'rb') as f:
      model = pickle.load(f)
 
 mp_drawing = mp.solutions.drawing_utils
