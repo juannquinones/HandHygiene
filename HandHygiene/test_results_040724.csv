@@ -1,6 +1,4 @@
-Model,Accuracy,Precision,Recall,F1-Score,"Inference Time
- (seconds)","Mean Frame Inference Time
- (seconds)"
-LR,0.982,0.982,0.982,0.982,0.002,0.001
-RF,0.995,0.995,0.995,0.995,0.005,0.001
-SVM,0.997,0.997,0.997,0.997,0.079,0.001
+Model,Accuracy,Precision,Recall,F1-Score,Inference Time (seconds),Mean Frame Inference Time (seconds),Mean Memory Used (KiloBytes),Mean Max Memory Used (KiloBytes)
+LR,0.982,0.982,0.982,0.982,0.002,0.004,0.958,15.623
+RF,0.995,0.995,0.995,0.995,0.005,0.005,8.227,17.852
+SVM,0.997,0.997,0.997,0.997,0.079,0.004,0.959,15.624
