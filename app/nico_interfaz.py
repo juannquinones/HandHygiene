@@ -84,7 +84,7 @@ class CameraApp:
             self.processing_video = True
         self.start_time = time.time()
         self.update_buttons(True)
-        self.process_video()
+        # self.process_video()
     
     # Método para cargar un video
     def load_video(self):
