@@ -16,17 +16,17 @@ import imutils
 
 import numpy as np
 
-MODEL_PATH ='/Users/juannquinones/Library/CloudStorage/OneDrive-ESCUELACOLOMBIANADEINGENIERIAJULIOGARAVITO/Nico/Manos/HigieneManos/Data/Models/rf_260624.pkl'
-#MODEL_PATH ='rf_5es_98acc.pkl'
-with open(MODEL_PATH, 'rb') as file:
-    modelo = pickle.load(file)
-step_time =[0,0,0,0,0,0,0]
-mp_drawing = mp.solutions.drawing_utils
-mp_drawing_styles = mp.solutions.drawing_styles
-mp_hands = mp.solutions.hands
-hands = mp_hands.Hands(model_complexity=0, min_detection_confidence=0.4, min_tracking_confidence=0.4, max_num_hands = 2,static_image_mode=True)
-hand_model = HandHygineModel(mp_drawing, mp_drawing_styles, mp_hands, hands, step_prediction_model=modelo)
-image_success = True
+# MODEL_PATH ='/Users/juannquinones/Library/CloudStorage/OneDrive-ESCUELACOLOMBIANADEINGENIERIAJULIOGARAVITO/Nico/Manos/HigieneManos/Data/Models/rf_260624.pkl'
+# #MODEL_PATH ='rf_5es_98acc.pkl'
+# with open(MODEL_PATH, 'rb') as file:
+#     modelo = pickle.load(file)
+# step_time =[0,0,0,0,0,0,0]
+# mp_drawing = mp.solutions.drawing_utils
+# mp_drawing_styles = mp.solutions.drawing_styles
+# mp_hands = mp.solutions.hands
+# hands = mp_hands.Hands(model_complexity=0, min_detection_confidence=0.4, min_tracking_confidence=0.4, max_num_hands = 2,static_image_mode=True)
+# hand_model = HandHygineModel(mp_drawing, mp_drawing_styles, mp_hands, hands, step_prediction_model=modelo)
+# image_success = True
 
 # Configuración de la interfaz gráfica
 class Interfaz(QtWidgets.QWidget):

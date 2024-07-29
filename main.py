@@ -1,118 +1,164 @@
+import tkinter as tk
+from tkinter import filedialog, ttk
 import cv2
-import mediapipe as mp
-import numpy as np
-import pickle
+import threading
 import time
-import os
+import numpy as np
+from PIL import Image, ImageTk
 
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Para ocultar los mensajes de advertencia de TensorFlow
+class VideoApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Video Analysis Application")
+        self.root.geometry("800x600")  # Set the window size
 
-class HandDetector:
-    def __init__(self):
-        self.mp_drawing = mp.solutions.drawing_utils
-        self.mp_hands = mp.solutions.hands
-        self.hands = self.mp_hands.Hands(model_complexity=0, min_detection_confidence=0.5, 
-                                         min_tracking_confidence=0.5, max_num_hands=2)
+        # Set up the vertical layout
+        self.frame1 = tk.Frame(root, height=int(root.winfo_screenheight() * 0.75))
+        self.frame1.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-    def process_frame(self, image):
-        return self.hands.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+        self.frame2 = tk.Frame(root, height=int(root.winfo_screenheight() * 0.25))
+        self.frame2.pack(side=tk.TOP, fill=tk.X)
 
-class HandDataProcessor:
-    def process_hand_landmarks(self, results):
-            if results.multi_hand_landmarks:
-            # verificar primero la cantidad de landmarks
-                if len(results.multi_hand_landmarks) == 1:
-                    self.variable = results.multi_handedness[0].classification[0].label
-                elif len(results.multi_hand_landmarks) == 2:
-                    self.variable = 'Both'
-                else:
-                    self.variable = None
-                    print('Error, se reconocen mas de dos manos')
+        self.frame3 = tk.Frame(root)
+        self.frame3.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-            # Procesar la información de cada mano detectada
-                if self.variable == "Left":
-                    self.mano_dere_row = np.zeros(63)
-                    self.mano_izq_row = np.array([[landmark.x, landmark.y, landmark.z] 
-                                                for landmark in results.multi_hand_landmarks[0].landmark]).flatten()
-                elif self.variable == "Right":
-                    self.mano_izq_row = np.zeros(63)
-                    self.mano_dere_row = np.array([[landmark.x, landmark.y, landmark.z] 
-                                                for landmark in results.multi_hand_landmarks[0].landmark]).flatten()
-                elif self.variable == "Both":
-                    self.mano_dere_row = np.array([[landmark.x, landmark.y, landmark.z] 
-                                                for landmark in results.multi_hand_landmarks[0].landmark]).flatten()
-                    self.mano_izq_row = np.array([[landmark.x, landmark.y, landmark.z] 
-                                                for landmark in results.multi_hand_landmarks[1].landmark]).flatten()
+        # Frame 1: Video display
+        self.video_label = tk.Label(self.frame1)
+        self.video_label.pack(expand=True, fill=tk.BOTH)
 
-            # Calcular centroides si hay datos válidos
-                if self.mano_dere_row is not None and self.mano_izq_row is not None:
-                    rows = np.concatenate((self.mano_dere_row, self.mano_izq_row))
-                    rows = np.where(rows == 0, np.nan, rows)
-                    self.centroid_x = np.nanmean(rows[::3])
-                    self.centroid_y = np.nanmean(rows[1::3])
-                    self.centroid_z = np.nanmean(rows[2::3])
+        # Frame 2: Controls
+        self.capture_type = tk.StringVar(value="Video")
+        self.radio_video = tk.Radiobutton(self.frame2, text="Video", variable=self.capture_type, value="Video", command=self.update_buttons)
+        self.radio_real_time = tk.Radiobutton(self.frame2, text="Real Time", variable=self.capture_type, value="Real Time", command=self.update_buttons)
+        self.radio_video.pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
+        self.radio_real_time.pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
 
-                    rows = np.where(np.isnan(rows), 0, rows)
-                    rows[::3] -= self.centroid_x
-                    rows[1::3] -= self.centroid_y
-                    rows[2::3] -= self.centroid_z
+        self.choose_button = tk.Button(self.frame2, text="Choose Video", command=self.choose_video)
+        self.choose_button.pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
 
-                    return rows
-            return None
+        self.start_stop_button = tk.Button(self.frame2, text="Start", command=self.start_stop)
+        self.start_stop_button.pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
 
-class Classifier:
-    def __init__(self, model_path):
-        with open(model_path, 'rb') as f:
-            self.model = pickle.load(f)
+        self.restart_button = tk.Button(self.frame2, text="Restart", command=self.restart)
+        self.restart_button.pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
 
-    def classify(self, rows):
-        return self.model.predict(rows.reshape(1, -1))[0]
+        # Frame 3: Statistics table
+        self.stats_tree = ttk.Treeview(self.frame3, columns=("Statistic", "Value"), show='headings')
+        self.stats_tree.heading("Statistic", text="Statistic")
+        self.stats_tree.heading("Value", text="Value")
+        self.stats_tree.pack(fill=tk.BOTH, expand=True)
 
-class UIRenderer:
-    @staticmethod
-    def draw_ui(self, image, results, info_str):
-            if results.multi_hand_landmarks:
-                for hand_landmarks in results.multi_hand_landmarks:
-                    # Dibuja los landmarks y las conexiones entre ellos con colores y espesores específicos
-                    self.mp_drawing.draw_landmarks(
-                        image,
-                        hand_landmarks,
-                        self.mp_hands.HAND_CONNECTIONS,
-                        self.mp_drawing.DrawingSpec(color=(0, 255, 255), thickness=2, circle_radius=3),
-                        self.mp_drawing.DrawingSpec(color=(255, 0, 255), thickness=2, circle_radius=3)
-                    )
+        # Variables for video capture and processing
+        self.video_source = None
+        self.cap = None
+        self.running = False
+        self.thread = None
 
-        # Dibujar el rectángulo del fondo para el texto
-            cv2.rectangle(image, (0, 0), (450, 60), (245, 117, 16), -1)
-            
-            # Dibujar el texto con información del tiempo y la clasificación
-            cv2.putText(image, info_str, (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
+        self.display_thread = None
+        self.display_running = False
 
-            # Mostrar la imagen resultante
-            cv2.imshow('Prediccion', image)
-        # Aquí iría el código para dibujar en la imagen.
+    def update_buttons(self):
+        if self.capture_type.get() == "Real Time":
+            self.choose_button.config(state=tk.DISABLED)
+            self.start_display()
+        else:
+            self.choose_button.config(state=tk.NORMAL)
+            self.stop_display()
 
-class Application:
-    def __init__(self):
-        self.detector = HandDetector()
-        self.processor = HandDataProcessor()
-        self.classifier = Classifier('avianca.pkl')
-        self.ui_renderer = UIRenderer()
-        self.cap = cv2.VideoCapture(0)
-        self.run()
+    def choose_video(self):
+        self.video_source = filedialog.askopenfilename(filetypes=[("Video files", "*.mp4;*.avi;*.mov")])
+        if self.video_source:
+            self.cap = cv2.VideoCapture(self.video_source)
 
-    def run(self):
-        while self.cap.isOpened():
-            ret, image = self.cap.read()
+    def start_stop(self):
+        if self.running:
+            self.running = False
+            self.start_stop_button.config(text="Start")
+        else:
+            self.running = True
+            self.start_stop_button.config(text="Stop")
+            if self.capture_type.get() == "Real Time":
+                self.cap = cv2.VideoCapture(0)
+            self.thread = threading.Thread(target=self.process_video)
+            self.thread.start()
+
+    def restart(self):
+        self.running = False
+        self.start_stop_button.config(text="Start")
+        self.video_source = None
+        if self.cap:
+            self.cap.release()
+        self.video_label.config(image='')
+        for item in self.stats_tree.get_children():
+            self.stats_tree.delete(item)
+
+    def process_video(self):
+        while self.running and self.cap.isOpened():
+            ret, frame = self.cap.read()
             if not ret:
-                print("Ignoring empty camera frame.")
                 break
-            # Procesar imagen, detectar manos, clasificar y renderizar UI.
-            # ...
 
-        self.cap.release()
-        cv2.destroyAllWindows()
+            # Resize frame to fit in the video label
+            frame = cv2.resize(frame, (self.video_label.winfo_width(), self.video_label.winfo_height()))
 
-# Ejecutar la aplicación
+            # Convert the frame to a format suitable for Tkinter
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            img = Image.fromarray(frame)
+            imgtk = ImageTk.PhotoImage(image=img)
+            self.video_label.imgtk = imgtk
+            self.video_label.config(image=imgtk)
+
+            # Simulate processing time
+            time.sleep(0.03)
+
+        if self.cap:
+            self.cap.release()
+
+        # Display dummy statistics after processing
+        self.display_statistics({"Mean Intensity": np.mean(frame), "Frame Count": 100})
+
+    def display_statistics(self, stats):
+        for item in self.stats_tree.get_children():
+            self.stats_tree.delete(item)
+        for stat, value in stats.items():
+            self.stats_tree.insert("", "end", values=(stat, value))
+
+    def start_display(self):
+        if not self.display_running:
+            self.display_running = True
+            self.display_thread = threading.Thread(target=self.display_video)
+            self.display_thread.start()
+
+    def stop_display(self):
+        self.display_running = False
+        if self.cap:
+            self.cap.release()
+        self.video_label.config(image='')
+
+    def display_video(self):
+        self.cap = cv2.VideoCapture(0)
+        while self.display_running:
+            ret, frame = self.cap.read()
+            if not ret:
+                break
+
+            # Resize frame to fit in the video label
+            frame = cv2.resize(frame, (self.video_label.winfo_width(), self.video_label.winfo_height()))
+
+            # Convert the frame to a format suitable for Tkinter
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            img = Image.fromarray(frame)
+            imgtk = ImageTk.PhotoImage(image=img)
+            self.video_label.imgtk = imgtk
+            self.video_label.config(image=imgtk)
+
+            # Simulate display time
+            time.sleep(0.03)
+
+        if self.cap:
+            self.cap.release()
+
 if __name__ == "__main__":
-    app = Application()
+    root = tk.Tk()
+    app = VideoApp(root)
+    root.mainloop()
