@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 from PyQt5.QtCore import Qt, pyqtSlot
 from PyQt5.QtGui import QImage, QPixmap, QFont
-from PyQt5.QtWidgets import QApplication, QLabel, QPushButton, QRadioButton, QVBoxLayout, QHBoxLayout, QWidget, QFileDialog, QTableWidget, QTableWidgetItem, QMainWindow, QGridLayout
+from PyQt5.QtWidgets import QApplication, QLabel, QPushButton, QRadioButton, QVBoxLayout, QHBoxLayout, QWidget, QFileDialog, QTableWidget, QTableWidgetItem, QMainWindow, QGridLayout, QComboBox
 
 from video_thread import VideoThread
 
@@ -17,13 +17,16 @@ class App(QMainWindow):
         self.display_height = 720
         self.current_frame = None
         self.video_source = None  # Initialize video source attribute
+        self.video_thread = None
+        # Step 1: Detect available cameras before showing the UI
+        available_cameras = self.get_available_cameras()
 
-        self.initUI()
+        self.initUI(available_cameras)
 
         self.video_thread = VideoThread()
         self.video_thread.change_pixmap_signal.connect(self.update_image)
 
-    def initUI(self):
+    def initUI(self, available_cameras):
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
 
@@ -38,6 +41,10 @@ class App(QMainWindow):
         self.choose_button = QPushButton("Choose Video")
         self.start_stop_button = QPushButton("Start")
         self.restart_button = QPushButton("Restart")
+
+        # Step 2: Initialize the camera selector with the available cameras
+        self.camera_selector = QComboBox()
+        self.camera_selector.addItems(available_cameras)
 
         self.table_widget = QTableWidget(0, 2)
         self.table_widget.setHorizontalHeaderLabels(["Statistic", "Value"])
@@ -55,6 +62,7 @@ class App(QMainWindow):
         button_layout = QHBoxLayout()
         button_layout.addWidget(self.radio_video)
         button_layout.addWidget(self.radio_real_time)
+        button_layout.addWidget(self.camera_selector)  # Add camera selector to the layout
         button_layout.addWidget(self.choose_button)
         button_layout.addWidget(self.start_stop_button)
         button_layout.addWidget(self.restart_button)
@@ -104,11 +112,19 @@ class App(QMainWindow):
         self.radio_video.setStyleSheet(radio_style)
         self.radio_real_time.setStyleSheet(radio_style)
 
+        self.camera_selector.setStyleSheet("""
+            QComboBox {
+                font-size: 18px;
+                font-weight: bold;
+                color: #b71c1c;
+            }
+        """)
+
         table_style = """
             QTableWidget {
                 background-color: #ffebee;
                 border-radius: 10px;
-                font-size: 20px;
+                font-size: 18px;
                 font-weight: bold;
             }
             QHeaderView::section {
@@ -128,6 +144,16 @@ class App(QMainWindow):
         self.table_widget.horizontalHeader().setDefaultAlignment(Qt.AlignCenter)
         self.table_widget.setEditTriggers(QTableWidget.NoEditTriggers)
 
+    def get_available_cameras(self):
+        """Detect available cameras."""
+        available_cameras = []
+        for i in range(10):  # Attempt to detect up to 10 cameras
+            cap = cv2.VideoCapture(i)
+            if cap.isOpened():
+                available_cameras.append(f"Camera {i}")
+                cap.release()
+        return available_cameras if available_cameras else ["No Cameras Available"]
+
     @pyqtSlot(np.ndarray)
     def update_image(self, cv_img):
         self.current_frame = cv_img
@@ -144,10 +170,16 @@ class App(QMainWindow):
 
     def update_mode(self):
         if self.radio_real_time.isChecked():
+            if self.video_thread is not None:
+                self.restart_on_change()
             self.choose_button.setEnabled(False)
             self.start_stop_button.setEnabled(True)
-            self.video_thread.set_source(0)
+            # Set the selected camera as the source
+            selected_camera_index = self.camera_selector.currentIndex()
+            self.video_thread.set_source(selected_camera_index)
         else:
+            if self.video_thread is not None:
+                self.restart_on_change()
             self.choose_button.setEnabled(True)
             self.start_stop_button.setEnabled(self.video_source is not None)
 
@@ -170,7 +202,13 @@ class App(QMainWindow):
             self.restart_button.setEnabled(True)
             if self.current_frame is not None:
                 #HAY QUE TENER EN ESTE ScRIPTS DATOS GLOBALES MIENTRAS SE CAPTURA LA IMAGEN, Y AQUI ES CUANDO SE MUESTRAN EN LA TABLA
-                self.update_statistics({"Mean Intensity": np.mean(self.current_frame), "Frame Count": 100})
+                self.update_statistics({"Total Time": 41.5, 
+                                        "Step 1 Duration": 7.1,
+                                        "Step 2 Duration": 7,
+                                        "Step 3 Duration": 6.5,
+                                        "Step 4 Duration": 6.9,
+                                        "Step 5 Duration": 6.9,
+                                        "Step 6 Duration": 7.1})
 
     def restart(self):
         self.video_thread.stop()
@@ -179,6 +217,14 @@ class App(QMainWindow):
         self.table_widget.setRowCount(0)
         self.image_label.clear()
         self.update_mode()
+        self.start_stop_button.setText("Start")
+    
+    def restart_on_change(self):
+        self.video_thread.stop()
+        self.video_thread = VideoThread()  # Recreate video thread to ensure fresh start
+        self.video_thread.change_pixmap_signal.connect(self.update_image)
+        self.table_widget.setRowCount(0)
+        self.image_label.clear()
         self.start_stop_button.setText("Start")
 
     def update_statistics(self, stats):
