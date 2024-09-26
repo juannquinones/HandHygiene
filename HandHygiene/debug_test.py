@@ -1,5 +1,5 @@
 
-from HandHygieneMain import *
+from HandHygiene.HandHygieneMain_revision import *
 
 MODEL_PATH = r'D:\\Proyectos\\Hands\\HigieneManos\\Data\\Models\\rf_5es_98acc.pkl'
 #MODEL_PATH ='/Users/juannquinones/Library/CloudStorage/OneDrive-ESCUELACOLOMBIANADEINGENIERIAJULIOGARAVITO/Nico/Manos/HigieneManos/Data/Models/rf_5es_98acc.pkl'

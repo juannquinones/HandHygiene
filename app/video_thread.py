@@ -3,6 +3,8 @@ import numpy as np
 from PyQt5.QtCore import QThread, pyqtSignal
 from HandHygieneMain import *
 import mediapipe as mp
+import time
+import pickle
 
 class VideoThread(QThread):
     change_pixmap_signal = pyqtSignal(np.ndarray)
@@ -20,7 +22,20 @@ class VideoThread(QThread):
         self.mp_hands = mp.solutions.hands
         self.hands = self.mp_hands.Hands(model_complexity=0, min_detection_confidence=0.4, min_tracking_confidence=0.4, max_num_hands = 2,static_image_mode=True) # modelo
         self.image_success = True
-        self.hand_model = HandHygineModel(self.mp_drawing, self.mp_drawing_styles, self.mp_hands, self.hands)#, step_prediction_model=self.modelo)
+
+        #MODEL_PATH ='/Users/juannquinones/Library/CloudStorage/OneDrive-ESCUELACOLOMBIANADEINGENIERIAJULIOGARAVITO/Nico/Manos/HigieneManos/Data/Models/rf_260624.pkl'
+        MODEL_PATH =r'D:\Proyectos\Hands\HigieneManos\Data\Models\lr_260624.pkl'
+        with open(MODEL_PATH, 'rb') as file:
+            self.model = pickle.load(file)
+
+        self.hand_model = HandHygineModel(self.mp_drawing, self.mp_drawing_styles, self.mp_hands, self.hands, self.model)#, step_prediction_model=self.modelo)
+
+        # Variables de la clase dinamicas
+        self.step_id =[1,2,3,4,5,6,'No Step']
+        self.step_time =[0,0,0,0,0,0,0]
+        self.video_start_time = time.time()
+        self.last_prediction = None
+        self.y=None
 
     def set_source(self, source):
         self._source = source
@@ -33,17 +48,36 @@ class VideoThread(QThread):
         try:
             while self._run_flag:
                 image_success, image = self.cap.read()
-                success, image2, right_hand_rows, left_hand_rows = self.hand_model.get_landmarks_structure(success=image_success, image = image, mode='capture', return_image=True)
-                if image_success:
+                success, _, right_hand_rows, left_hand_rows = self.hand_model.get_landmarks_structure(success=image_success, image = image, mode='capture', return_image=True)
+                # if image_success:
+                #     self.change_pixmap_signal.emit(image)
+
+                if success: # Solo se procesan las que tienen landmarks validos 
+                    if self.hand_model.verify_hand_rows(right_hand_rows,left_hand_rows):
+                        X = np.concatenate([self.hand_model.get_normalized_rows(right_hand_rows), self.hand_model.get_normalized_rows(left_hand_rows)], axis=0).reshape(42*3) 
+                        self.y = self.hand_model.predict_hygiene_step(X.reshape(1,-1))
+
+                        if self.y != self.last_prediction:
+                            end_time = time.time()
+                            duration = end_time - self.video_start_time
+                            if self.last_prediction is None:
+                                self.step_time[-1] += duration
+                            else:
+                                self.step_time[self.last_prediction]+= duration
+                            self.last_prediction = self.y
+                            self.video_start_time = end_time
+                    cv2.putText(image, f"Step: {self.y}", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 2.5, (255, 255, 255), 2)
                     self.change_pixmap_signal.emit(image)
-                else:
-                    break
+                    #cv2.imshow('Hand step clasiffication in Real Time', image)
         finally:
             self.cap.release()
 
     def stop(self):
         self._run_flag = False
         self.wait()
+
+    def get_steps_times(self):
+        return self.step_time
     
     def restart(self):
         self.restart_settings()

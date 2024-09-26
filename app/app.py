@@ -189,10 +189,12 @@ class App(QMainWindow):
             self.video_source = file_name
             self.video_thread.set_source(file_name)
             self.start_stop_button.setEnabled(True)
-            self.radio_video.setChecked(True)
+            #self.radio_video.setChecked(True)
 
     def start_stop(self):
         if self.start_stop_button.text() == "Start":
+            print(self.video_source, 'video thread', self.video_thread._source)
+            print('vector de tiempos:', self.video_thread.get_steps_times)
             self.start_stop_button.setText("Stop")
             self.restart_button.setEnabled(False)
             self.video_thread.start()
@@ -213,11 +215,10 @@ class App(QMainWindow):
     def restart(self):
         self.video_thread.stop()
         self.video_thread = VideoThread()  # Recreate video thread to ensure fresh start
+        self.video_thread.set_source(self.video_source) #Lo crea con la configuracion anterioir
         self.video_thread.change_pixmap_signal.connect(self.update_image)
         self.table_widget.setRowCount(0)
         self.image_label.clear()
-        self.update_mode()
-        self.start_stop_button.setText("Start")
     
     def restart_on_change(self):
         self.video_thread.stop()
