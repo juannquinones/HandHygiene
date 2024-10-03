@@ -202,15 +202,11 @@ class App(QMainWindow):
             self.start_stop_button.setText("Start")
             self.restart_button.setEnabled(True)
             print('vector de tiempos:', self.video_thread.get_steps_times())
+            vector_save = {"Step " + str(i+1) +" Duration":v for i,v in enumerate(self.video_thread.get_steps_times())}
+            vector_save['Total Time']=sum(self.video_thread.get_steps_times())
             if self.current_frame is not None:
                 #HAY QUE TENER EN ESTE ScRIPTS DATOS GLOBALES MIENTRAS SE CAPTURA LA IMAGEN, Y AQUI ES CUANDO SE MUESTRAN EN LA TABLA
-                self.update_statistics({"Total Time": 41.5, 
-                                        "Step 1 Duration": 7.1,
-                                        "Step 2 Duration": 7,
-                                        "Step 3 Duration": 6.5,
-                                        "Step 4 Duration": 6.9,
-                                        "Step 5 Duration": 6.9,
-                                        "Step 6 Duration": 7.1})
+                self.update_statistics(vector_save)
 
     def restart(self):
         self.video_thread.stop()
