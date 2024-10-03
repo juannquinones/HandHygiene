@@ -194,7 +194,6 @@ class App(QMainWindow):
     def start_stop(self):
         if self.start_stop_button.text() == "Start":
             print(self.video_source, 'video thread', self.video_thread._source)
-            print('vector de tiempos:', self.video_thread.get_steps_times)
             self.start_stop_button.setText("Stop")
             self.restart_button.setEnabled(False)
             self.video_thread.start()
@@ -202,6 +201,7 @@ class App(QMainWindow):
             self.video_thread.stop()
             self.start_stop_button.setText("Start")
             self.restart_button.setEnabled(True)
+            print('vector de tiempos:', self.video_thread.get_steps_times())
             if self.current_frame is not None:
                 #HAY QUE TENER EN ESTE ScRIPTS DATOS GLOBALES MIENTRAS SE CAPTURA LA IMAGEN, Y AQUI ES CUANDO SE MUESTRAN EN LA TABLA
                 self.update_statistics({"Total Time": 41.5, 
