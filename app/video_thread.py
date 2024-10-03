@@ -23,8 +23,8 @@ class VideoThread(QThread):
         self.hands = self.mp_hands.Hands(model_complexity=0, min_detection_confidence=0.4, min_tracking_confidence=0.4, max_num_hands = 2,static_image_mode=True) # modelo
         self.image_success = True
 
-        #MODEL_PATH ='/Users/juannquinones/Library/CloudStorage/OneDrive-ESCUELACOLOMBIANADEINGENIERIAJULIOGARAVITO/Nico/Manos/HigieneManos/Data/Models/rf_260624.pkl'
-        MODEL_PATH =r'D:\Proyectos\Hands\HigieneManos\Data\Models\lr_260624.pkl'
+        MODEL_PATH ='/Users/juannquinones/Library/CloudStorage/OneDrive-ESCUELACOLOMBIANADEINGENIERIAJULIOGARAVITO/Nico/Manos/HigieneManos/Data/Models/rf_260624.pkl'
+        #MODEL_PATH =r'D:\Proyectos\Hands\HigieneManos\Data\Models\lr_260624.pkl'
         with open(MODEL_PATH, 'rb') as file:
             self.model = pickle.load(file)
 

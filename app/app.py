@@ -6,12 +6,34 @@ from PyQt5.QtGui import QImage, QPixmap, QFont
 from PyQt5.QtWidgets import QApplication, QLabel, QPushButton, QRadioButton, QVBoxLayout, QHBoxLayout, QWidget, QFileDialog, QTableWidget, QTableWidgetItem, QMainWindow, QGridLayout, QComboBox
 
 from video_thread import VideoThread
+import sqlite3
+from datetime import datetime
 
 class App(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Hand Hygiene")
         self.showFullScreen()
+
+                # Establecer la conexión a la base de datos al iniciar la aplicación
+        self.conn = sqlite3.connect('HandHygiene_database.db')
+        self.cursor = self.conn.cursor()
+        
+        # Crear la tabla si no existe
+        self.cursor.execute('''
+            CREATE TABLE IF NOT EXISTS my_table (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                date_time TEXT,
+                Step_1 REAL,
+                Step_2 REAL,
+                Step_3 REAL,
+                Step_4 REAL,
+                Step_5 REAL,
+                Step_6 REAL, 
+                Step_7 REAL
+            )
+        ''')
+        self.conn.commit()
         
         self.display_width = 1280
         self.display_height = 720
@@ -202,11 +224,14 @@ class App(QMainWindow):
             self.start_stop_button.setText("Start")
             self.restart_button.setEnabled(True)
             print('vector de tiempos:', self.video_thread.get_steps_times())
+            record_id = self.get_lastid(self.video_thread.get_steps_times())
+            self.close_connection()
             vector_save = {"Step " + str(i+1) +" Duration":v for i,v in enumerate(self.video_thread.get_steps_times())}
             vector_save['Total Time']=sum(self.video_thread.get_steps_times())
+            
             if self.current_frame is not None:
                 #HAY QUE TENER EN ESTE ScRIPTS DATOS GLOBALES MIENTRAS SE CAPTURA LA IMAGEN, Y AQUI ES CUANDO SE MUESTRAN EN LA TABLA
-                self.update_statistics(vector_save)
+                self.update_statistics(vector_save,record_id)
 
     def restart(self):
         self.video_thread.stop()
@@ -224,13 +249,40 @@ class App(QMainWindow):
         self.image_label.clear()
         self.start_stop_button.setText("Start")
 
-    def update_statistics(self, stats):
+    def update_statistics(self, stats, record_id):
         self.table_widget.setRowCount(0)
+
+        row_position = self.table_widget.rowCount()
+        self.table_widget.insertRow(row_position)
+        self.table_widget.setItem(row_position, 0, QTableWidgetItem(f"ID = {record_id}"))
         for key, value in stats.items():
             row_position = self.table_widget.rowCount()
             self.table_widget.insertRow(row_position)
             self.table_widget.setItem(row_position, 0, QTableWidgetItem(key))
             self.table_widget.setItem(row_position, 1, QTableWidgetItem(str(value)))
+    def get_lastid(self, values):
+    # Verificar que el vector tenga exactamente 7 elementos
+        if len(values) != 7:
+            raise ValueError("The input vector must contain exactly 7 float numbers.")
+        
+        # Obtener la fecha y hora actual
+        date_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        
+        # Insertar el nuevo registro en la tabla
+        self.cursor.execute('''
+            INSERT INTO my_table (date_time, Step_1, Step_2, Step_3, Step_4, Step_5, Step_6, Step_7)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (date_time, *values))
+        
+        # Confirmar la transacción
+        self.conn.commit()
+        
+        # Obtener el ID de la última fila insertada
+        return self.cursor.lastrowid
+
+    def close_connection(self):
+        # Cerrar la conexión a la base de datos
+        self.conn.close()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
