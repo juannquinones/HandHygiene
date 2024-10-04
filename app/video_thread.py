@@ -5,15 +5,17 @@ from HandHygieneMain import *
 import mediapipe as mp
 import time
 import pickle
+import os
+import sys
 
 class VideoThread(QThread):
     change_pixmap_signal = pyqtSignal(np.ndarray)
 
-    def __init__(self):
+    def __init__(self, model_path):
         super().__init__()
-        self.restart_settings()
+        self.restart_settings(model_path)
     
-    def restart_settings(self):
+    def restart_settings(self, model_path):
         self.cap = None
         self._run_flag = False
         self._source = 0
@@ -23,8 +25,8 @@ class VideoThread(QThread):
         self.hands = self.mp_hands.Hands(model_complexity=0, min_detection_confidence=0.4, min_tracking_confidence=0.4, max_num_hands = 2,static_image_mode=True) # modelo
         self.image_success = True
 
-        MODEL_PATH ='/Users/juannquinones/Library/CloudStorage/OneDrive-ESCUELACOLOMBIANADEINGENIERIAJULIOGARAVITO/Nico/Manos/HigieneManos/Data/Models/rf_260624.pkl'
-        #MODEL_PATH =r'D:\Proyectos\Hands\HigieneManos\Data\Models\lr_260624.pkl'
+        #MODEL_PATH ='/Users/juannquinones/Library/CloudStorage/OneDrive-ESCUELACOLOMBIANADEINGENIERIAJULIOGARAVITO/Nico/Manos/HigieneManos/Data/Models/rf_260624.pkl'
+        MODEL_PATH = model_path
         with open(MODEL_PATH, 'rb') as file:
             self.model = pickle.load(file)
 
@@ -55,7 +57,7 @@ class VideoThread(QThread):
                 if success: # Solo se procesan las que tienen landmarks validos 
                     if self.hand_model.verify_hand_rows(right_hand_rows,left_hand_rows):
                         X = np.concatenate([self.hand_model.get_normalized_rows(right_hand_rows), self.hand_model.get_normalized_rows(left_hand_rows)], axis=0).reshape(42*3) 
-                        self.y = self.hand_model.predict_hygiene_step(X.reshape(1,-1))
+                        self.y = self.hand_model.predict_hygiene_step(X.reshape(1,-1))+1
 
                         if self.y != self.last_prediction:
                             end_time = time.time()

@@ -8,32 +8,30 @@ from PyQt5.QtWidgets import QApplication, QLabel, QPushButton, QRadioButton, QVB
 from video_thread import VideoThread
 import sqlite3
 from datetime import datetime
+import os
+import sys
+import warnings
+warnings.filterwarnings('ignore')
+
+def get_app_path():
+    if getattr(sys, 'frozen', False):
+        app_path = os. path.dirname(sys.executable)
+    else:
+        app_path = os.path.dirname(os.path.abspath(__file__))
+    return app_path
+
+app_path = get_app_path()
+
+db_path = os.path.join(app_path, 'DataBase')
+db_path = os.path.join(db_path, 'HandHygiene_database.db')
+model_path = os.path.join(app_path, 'Models')
+model_path = os.path.join(model_path, 'lr_260624.pkl')
 
 class App(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Hand Hygiene")
         self.showFullScreen()
-
-                # Establecer la conexión a la base de datos al iniciar la aplicación
-        self.conn = sqlite3.connect('HandHygiene_database.db')
-        self.cursor = self.conn.cursor()
-        
-        # Crear la tabla si no existe
-        self.cursor.execute('''
-            CREATE TABLE IF NOT EXISTS my_table (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                date_time TEXT,
-                Step_1 REAL,
-                Step_2 REAL,
-                Step_3 REAL,
-                Step_4 REAL,
-                Step_5 REAL,
-                Step_6 REAL, 
-                Step_7 REAL
-            )
-        ''')
-        self.conn.commit()
         
         self.display_width = 1280
         self.display_height = 720
@@ -45,7 +43,7 @@ class App(QMainWindow):
 
         self.initUI(available_cameras)
 
-        self.video_thread = VideoThread()
+        self.video_thread = VideoThread(model_path)
         self.video_thread.change_pixmap_signal.connect(self.update_image)
 
     def initUI(self, available_cameras):
@@ -198,6 +196,7 @@ class App(QMainWindow):
             self.start_stop_button.setEnabled(True)
             # Set the selected camera as the source
             selected_camera_index = self.camera_selector.currentIndex()
+            self.video_source = selected_camera_index
             self.video_thread.set_source(selected_camera_index)
         else:
             if self.video_thread is not None:
@@ -215,18 +214,18 @@ class App(QMainWindow):
 
     def start_stop(self):
         if self.start_stop_button.text() == "Start":
-            print(self.video_source, 'video thread', self.video_thread._source)
+            print('Empieza a correr el video en la fuente: ', self.video_source, 'video thread', self.video_thread._source)
             self.start_stop_button.setText("Stop")
             self.restart_button.setEnabled(False)
             self.video_thread.start()
         else:
             self.video_thread.stop()
+            print('Video Detenido')
             self.start_stop_button.setText("Start")
             self.restart_button.setEnabled(True)
-            print('vector de tiempos:', self.video_thread.get_steps_times())
+            #print('vector de tiempos:', self.video_thread.get_steps_times())
             record_id = self.get_lastid(self.video_thread.get_steps_times())
-            self.close_connection()
-            vector_save = {"Step " + str(i+1) +" Duration":v for i,v in enumerate(self.video_thread.get_steps_times())}
+            vector_save = {"Step " + str(i) +" Duration":"{:.2f}".format(v) for i,v in enumerate(self.video_thread.get_steps_times())}
             vector_save['Total Time']=sum(self.video_thread.get_steps_times())
             
             if self.current_frame is not None:
@@ -235,15 +234,15 @@ class App(QMainWindow):
 
     def restart(self):
         self.video_thread.stop()
-        self.video_thread = VideoThread()  # Recreate video thread to ensure fresh start
-        self.video_thread.set_source(self.video_source) #Lo crea con la configuracion anterioir
+        self.video_thread = VideoThread(model_path)  # Recreate video thread to ensure fresh start
+        self.video_thread.set_source(self.video_source) #Lo crea con la configuracion anterior
         self.video_thread.change_pixmap_signal.connect(self.update_image)
         self.table_widget.setRowCount(0)
         self.image_label.clear()
     
     def restart_on_change(self):
         self.video_thread.stop()
-        self.video_thread = VideoThread()  # Recreate video thread to ensure fresh start
+        self.video_thread = VideoThread(model_path)  # Recreate video thread to ensure fresh start
         self.video_thread.change_pixmap_signal.connect(self.update_image)
         self.table_widget.setRowCount(0)
         self.image_label.clear()
@@ -254,36 +253,38 @@ class App(QMainWindow):
 
         row_position = self.table_widget.rowCount()
         self.table_widget.insertRow(row_position)
-        self.table_widget.setItem(row_position, 0, QTableWidgetItem(f"ID = {record_id}"))
+        self.table_widget.setItem(row_position, 0, QTableWidgetItem(f"ID"))
+        self.table_widget.setItem(row_position, 1, QTableWidgetItem(f"{record_id}"))
+
         for key, value in stats.items():
             row_position = self.table_widget.rowCount()
             self.table_widget.insertRow(row_position)
             self.table_widget.setItem(row_position, 0, QTableWidgetItem(key))
             self.table_widget.setItem(row_position, 1, QTableWidgetItem(str(value)))
+            
     def get_lastid(self, values):
     # Verificar que el vector tenga exactamente 7 elementos
         if len(values) != 7:
             raise ValueError("The input vector must contain exactly 7 float numbers.")
         
         # Obtener la fecha y hora actual
-        date_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        
+        date_time = datetime.now()#.strftime('%Y-%m-%d %H:%M:%S')
+        conn = sqlite3.connect(db_path, timeout=30, check_same_thread=False)
+        conn.execute("PRAGMA journal_mode=WAL;")  # Enable WAL mode
+        cursor = conn.cursor()
         # Insertar el nuevo registro en la tabla
-        self.cursor.execute('''
+        cursor.execute('''
             INSERT INTO my_table (date_time, Step_1, Step_2, Step_3, Step_4, Step_5, Step_6, Step_7)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (date_time, *values))
+        ''', (date_time,*values))
         
         # Confirmar la transacción
-        self.conn.commit()
-        
+        id = cursor.lastrowid
+        conn.commit()
+        conn.close()
         # Obtener el ID de la última fila insertada
-        return self.cursor.lastrowid
-
-    def close_connection(self):
-        # Cerrar la conexión a la base de datos
-        self.conn.close()
-
+        return id
+    
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     a = App()

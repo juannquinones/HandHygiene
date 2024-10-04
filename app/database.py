@@ -41,7 +41,7 @@ def get_id(values):
     # Commit the transaction
     conn.commit()
     last_id = cursor.lastrowid
-    conn.close
+    conn.close()
     
     # Return the ID of the last inserted row
     return  last_id
