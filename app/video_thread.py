@@ -34,7 +34,7 @@ class VideoThread(QThread):
 
         # Variables de la clase dinamicas
         self.step_id =[1,2,3,4,5,6,'No Step']
-        self.step_time =[0,0,0,0,0,0,0]
+        self.step_time =[0,0,0,0,0,0,0,0,0,0,0]
         self.video_start_time = time.time()
         self.last_prediction = None
         self.y=None

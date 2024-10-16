@@ -25,7 +25,7 @@ app_path = get_app_path()
 db_path = os.path.join(app_path, 'DataBase')
 db_path = os.path.join(db_path, 'HandHygiene_database.db')
 model_path = os.path.join(app_path, 'Models')
-model_path = os.path.join(model_path, 'lr_260624.pkl')
+model_path = os.path.join(model_path, 'lr_10102024.pkl')
 
 class App(QMainWindow):
     def __init__(self):
@@ -40,7 +40,8 @@ class App(QMainWindow):
         self.video_thread = None
         # Step 1: Detect available cameras before showing the UI
         available_cameras = self.get_available_cameras()
-
+        
+        self.real_steps = [1, 2.1, 2.2, 3, 4.1, 4.2, 5.1, 5.2, 6.1, 6.2, 7]
         self.initUI(available_cameras)
 
         self.video_thread = VideoThread(model_path)
@@ -69,6 +70,19 @@ class App(QMainWindow):
         self.table_widget = QTableWidget(0, 2)
         self.table_widget.setHorizontalHeaderLabels(["Statistic", "Value"])
 
+        self.traffic_light_label = QLabel(self)
+        pixmap = QPixmap("/Users/juannquinones/Library/CloudStorage/OneDrive-ESCUELACOLOMBIANADEINGENIERIAJULIOGARAVITO/Nico/Manos/HigieneManos/app/semaforo.png")  # Cambia la ruta a tu imagen
+        pixmap = pixmap.scaled(int(pixmap.width() * 0.25), int(pixmap.height() * 0.25), Qt.KeepAspectRatio)
+        self.traffic_light_label.setPixmap(pixmap)
+        circle_layout = QVBoxLayout()
+        circle_layout.setSpacing(11)
+        for _ in range(3):
+            circle = QLabel(self)
+            circle.setStyleSheet("background-color: red; border-radius: 20px;")  # 12px para hacer el círculo
+            circle.setFixedSize(50, 55)  # Asigna el tamaño al QLabel
+            circle_layout.addWidget(circle, alignment=Qt.AlignCenter)
+            circle_layout.setContentsMargins(0, 35, 80, 0)
+
         self.apply_styles()
 
         title_label = QLabel("Hand Hygiene Video Analysis", self)
@@ -76,8 +90,11 @@ class App(QMainWindow):
         title_label.setAlignment(Qt.AlignCenter)
 
         layout = QGridLayout()
-        layout.addWidget(title_label, 0, 0, 1, 3, Qt.AlignCenter)
-        layout.addWidget(self.image_label, 1, 0, 1, 3, Qt.AlignCenter)
+        layout.addWidget(title_label, 0, 0, 1, 3, Qt.AlignTop)
+        layout.addWidget(self.image_label, 1, 0, 1, 3, Qt.AlignTop)
+        layout.addWidget(self.traffic_light_label, 1, 0, 1, 3, alignment=Qt.AlignTop | Qt.AlignRight)
+        layout.addLayout(circle_layout, 1, 0, 1, 3, alignment=Qt.AlignTop | Qt.AlignRight)
+        
 
         button_layout = QHBoxLayout()
         button_layout.addWidget(self.radio_video)
@@ -87,8 +104,9 @@ class App(QMainWindow):
         button_layout.addWidget(self.start_stop_button)
         button_layout.addWidget(self.restart_button)
 
-        layout.addLayout(button_layout, 2, 0, 1, 3)
-        layout.addWidget(self.table_widget, 3, 0, 1, 3)
+
+        layout.addLayout(button_layout, 1, 0, 1, 3, Qt.AlignBottom)
+        layout.addWidget(self.table_widget, 3, 0, 1, 3, Qt.AlignTop)
 
         central_widget.setLayout(layout)
 
@@ -185,7 +203,7 @@ class App(QMainWindow):
         h, w, ch = rgb_image.shape
         bytes_per_line = ch * w
         convert_to_Qt_format = QImage(rgb_image.data, w, h, bytes_per_line, QImage.Format_RGB888)
-        p = convert_to_Qt_format.scaled(self.display_width, self.display_height, Qt.KeepAspectRatio)
+        p = convert_to_Qt_format.scaled(int(self.display_width * 0.8), int(self.display_height*0.8), Qt.KeepAspectRatio)
         return QPixmap.fromImage(p)
 
     def update_mode(self):
@@ -225,7 +243,8 @@ class App(QMainWindow):
             self.restart_button.setEnabled(True)
             #print('vector de tiempos:', self.video_thread.get_steps_times())
             record_id = self.get_lastid(self.video_thread.get_steps_times())
-            vector_save = {"Step " + str(i) +" Duration":"{:.2f}".format(v) for i,v in enumerate(self.video_thread.get_steps_times())}
+            #vector_save = {"Step " + str(i) +" Duration":"{:.2f}".format(v) for i,v in enumerate(self.video_thread.get_steps_times())}
+            vector_save = {"Step " + str(step) + " Duration": "{:.2f}".format(v) for step, v in zip(self.real_steps, self.video_thread.get_steps_times())}
             vector_save['Total Time']=sum(self.video_thread.get_steps_times())
             
             if self.current_frame is not None:
@@ -264,8 +283,8 @@ class App(QMainWindow):
             
     def get_lastid(self, values):
     # Verificar que el vector tenga exactamente 7 elementos
-        if len(values) != 7:
-            raise ValueError("The input vector must contain exactly 7 float numbers.")
+        if len(values) != 11:
+            raise ValueError("The input vector must contain exactly 11 float numbers.")
         
         # Obtener la fecha y hora actual
         date_time = datetime.now()#.strftime('%Y-%m-%d %H:%M:%S')
@@ -274,8 +293,8 @@ class App(QMainWindow):
         cursor = conn.cursor()
         # Insertar el nuevo registro en la tabla
         cursor.execute('''
-            INSERT INTO my_table (date_time, Step_1, Step_2, Step_3, Step_4, Step_5, Step_6, Step_7)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO my_table (date_time, Step_1, "Step_2.1","Step_2.2", Step_3, "Step_4.1", "Step_4.2", "Step_5.1", "Step_5.2", "Step_6.1", "Step_6.2", Step_7)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (date_time,*values))
         
         # Confirmar la transacción
