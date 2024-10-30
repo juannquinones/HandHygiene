@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 from PyQt5.QtCore import Qt, pyqtSlot
 from PyQt5.QtGui import QImage, QPixmap, QFont
-from PyQt5.QtWidgets import QApplication, QLabel, QPushButton, QRadioButton, QVBoxLayout, QHBoxLayout, QWidget, QFileDialog, QTableWidget, QTableWidgetItem, QMainWindow, QGridLayout, QComboBox
+from PyQt5.QtWidgets import QApplication, QLabel, QPushButton, QRadioButton, QVBoxLayout, QHBoxLayout, QWidget, QFileDialog, QTableWidget, QTableWidgetItem, QMainWindow, QGridLayout, QComboBox, QSizePolicy, QHeaderView
 
 from video_thread import VideoThread
 import sqlite3
@@ -19,6 +19,9 @@ def get_app_path():
     else:
         app_path = os.path.dirname(os.path.abspath(__file__))
     return app_path
+
+steps_map = {1:'1', 2:'2.1', 3:'2.2', 4:'3', 5:'4.1', 
+            6:'4.2', 7:'5.1', 8:'5.2', 9:'6.1', 10:'6.2', 11:'No step'}
 
 app_path = get_app_path()
 
@@ -38,13 +41,13 @@ class App(QMainWindow):
         self.current_frame = None
         self.video_source = None  # Initialize video source attribute
         self.video_thread = None
+        self.record_id=None
         # Step 1: Detect available cameras before showing the UI
         available_cameras = self.get_available_cameras()
         
-        self.real_steps = [1, 2.1, 2.2, 3, 4.1, 4.2, 5.1, 5.2, 6.1, 6.2, 7]
         self.initUI(available_cameras)
 
-        self.video_thread = VideoThread(model_path)
+        self.video_thread = VideoThread(model_path,app_path)
         self.video_thread.change_pixmap_signal.connect(self.update_image)
 
     def initUI(self, available_cameras):
@@ -62,61 +65,144 @@ class App(QMainWindow):
         self.choose_button = QPushButton("Choose Video")
         self.start_stop_button = QPushButton("Start")
         self.restart_button = QPushButton("Restart")
+        self.save_video_button = QPushButton("Save Video")
 
         # Step 2: Initialize the camera selector with the available cameras
         self.camera_selector = QComboBox()
         self.camera_selector.addItems(available_cameras)
 
         self.table_widget = QTableWidget(0, 2)
+        self.table_widget.horizontalHeader().setStretchLastSection(True)
+        self.table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.table_widget.setHorizontalHeaderLabels(["Statistic", "Value"])
+        
 
-        self.traffic_light_label = QLabel(self)
-        pixmap = QPixmap("/Users/juannquinones/Library/CloudStorage/OneDrive-ESCUELACOLOMBIANADEINGENIERIAJULIOGARAVITO/Nico/Manos/HigieneManos/app/semaforo.png")  # Cambia la ruta a tu imagen
-        pixmap = pixmap.scaled(int(pixmap.width() * 0.25), int(pixmap.height() * 0.25), Qt.KeepAspectRatio)
-        self.traffic_light_label.setPixmap(pixmap)
-        circle_layout = QVBoxLayout()
-        circle_layout.setSpacing(11)
-        for _ in range(3):
-            circle = QLabel(self)
-            circle.setStyleSheet("background-color: red; border-radius: 20px;")  # 12px para hacer el círculo
-            circle.setFixedSize(50, 55)  # Asigna el tamaño al QLabel
-            circle_layout.addWidget(circle, alignment=Qt.AlignCenter)
-            circle_layout.setContentsMargins(0, 35, 80, 0)
+        self.red_light_label = QLabel()
+        self.red_light_label.setFixedSize(50, 50)
+        self.red_light_label.setAlignment(Qt.AlignCenter)
+
+        self.green_light_label = QLabel()
+        self.green_light_label.setFixedSize(50, 50)
+        self.green_light_label.setAlignment(Qt.AlignCenter)
+
+        # Initially set to red
+        self.update_traffic_lights('')
 
         self.apply_styles()
+
+        main_layout = QVBoxLayout()
 
         title_label = QLabel("Hand Hygiene Video Analysis", self)
         title_label.setFont(QFont("Arial", 26, QFont.Bold))
         title_label.setAlignment(Qt.AlignCenter)
 
+        main_layout.addWidget(title_label)
+
+        content_layout = QHBoxLayout()
+
+        left_layout = QVBoxLayout()
+        left_layout.setAlignment(Qt.AlignCenter)  # Center content vertically
+
+        options_layout = QVBoxLayout()
+        options_layout.addWidget(self.radio_video)
+        options_layout.addWidget(self.radio_real_time)
+        options_layout.addWidget(self.camera_selector)
+        '''
         layout = QGridLayout()
         layout.addWidget(title_label, 0, 0, 1, 3, Qt.AlignTop)
         layout.addWidget(self.image_label, 1, 0, 1, 3, Qt.AlignTop)
         layout.addWidget(self.traffic_light_label, 1, 0, 1, 3, alignment=Qt.AlignTop | Qt.AlignRight)
         layout.addLayout(circle_layout, 1, 0, 1, 3, alignment=Qt.AlignTop | Qt.AlignRight)
+        '''
+
+        buttons_layout = QHBoxLayout()
+        #button_layout.addWidget(self.radio_video)
+        #button_layout.addWidget(self.radio_real_time)
+        #button_layout.addWidget(self.camera_selector)  # Add camera selector to the layout
+        buttons_layout.addWidget(self.choose_button)
+        buttons_layout.addWidget(self.start_stop_button)
+        buttons_layout.addWidget(self.restart_button)
+        buttons_layout.addWidget(self.save_video_button)
+
+        left_layout.addLayout(options_layout)
+        left_layout.addLayout(buttons_layout)
+        left_layout.addWidget(self.table_widget)
         
+        #left_layout.addStretch()
 
-        button_layout = QHBoxLayout()
-        button_layout.addWidget(self.radio_video)
-        button_layout.addWidget(self.radio_real_time)
-        button_layout.addWidget(self.camera_selector)  # Add camera selector to the layout
-        button_layout.addWidget(self.choose_button)
-        button_layout.addWidget(self.start_stop_button)
-        button_layout.addWidget(self.restart_button)
+        # Right vertical layout for traffic lights and image
+        right_layout = QVBoxLayout()
+        right_layout.setAlignment(Qt.AlignVCenter)  # Center content vertically
 
+        # Add stretch to center content vertically
+        right_layout.addStretch()
 
+        traffic_lights_layout = QHBoxLayout()
+        traffic_lights_layout.setAlignment(Qt.AlignCenter)
+        traffic_lights_layout.addWidget(self.red_light_label)
+        traffic_lights_layout.addWidget(self.green_light_label)
+
+        right_layout.addLayout(traffic_lights_layout)
+        right_layout.addWidget(self.image_label, alignment=Qt.AlignCenter)
+        
+        right_layout.addStretch()
+
+        # Add left and right layouts to the content layout
+        content_layout.addLayout(left_layout)
+        
+        content_layout.addLayout(right_layout)
+        content_layout.setStretch(0, 2)  # Aumenta el espacio del lado izquierdo
+        content_layout.setStretch(1, 1)  # Reduce el espacio del lado derecho
+
+        # Add content layout to the main layout
+        main_layout.addLayout(content_layout)
+
+        # Set the main layout to the central widget
+        central_widget.setLayout(main_layout)
+
+        '''
         layout.addLayout(button_layout, 1, 0, 1, 3, Qt.AlignBottom)
         layout.addWidget(self.table_widget, 3, 0, 1, 3, Qt.AlignTop)
 
         central_widget.setLayout(layout)
+        '''
 
         self.radio_real_time.toggled.connect(self.update_mode)
         self.radio_video.toggled.connect(self.update_mode)
         self.choose_button.clicked.connect(self.choose_video)
         self.start_stop_button.clicked.connect(self.start_stop)
         self.restart_button.clicked.connect(self.restart)
+        self.save_video_button.clicked.connect(self.save_video)
 
         self.update_mode()  # Ensure buttons are in correct state at start
+
+    def update_traffic_lights(self, color):
+        red_style = """
+                background-color: red;
+                border: 1px solid black;
+                border-radius: 25px;
+            """
+        gray_style = """
+                background-color: #D3D3D3;
+                border: 1px solid black;
+                border-radius: 25px;
+            """
+
+        green_style = """
+                background-color: #32CD32;
+                border: 1px solid black;
+                border-radius: 25px;
+            """
+
+        if color == 'red':
+            self.red_light_label.setStyleSheet(red_style)
+            self.green_light_label.setStyleSheet(red_style)
+        elif color == 'green':
+            self.red_light_label.setStyleSheet(green_style)
+            self.green_light_label.setStyleSheet(green_style)
+        else:
+            self.red_light_label.setStyleSheet(gray_style)
+            self.green_light_label.setStyleSheet(gray_style)
 
     def apply_styles(self):
         button_style = """
@@ -139,7 +225,7 @@ class App(QMainWindow):
         self.choose_button.setStyleSheet(button_style)
         self.start_stop_button.setStyleSheet(button_style)
         self.restart_button.setStyleSheet(button_style)
-
+        self. save_video_button.setStyleSheet(button_style)
         radio_style = """
             QRadioButton {
                 font-size: 18px;
@@ -233,6 +319,7 @@ class App(QMainWindow):
     def start_stop(self):
         if self.start_stop_button.text() == "Start":
             print('Empieza a correr el video en la fuente: ', self.video_source, 'video thread', self.video_thread._source)
+            self.update_traffic_lights('red')
             self.start_stop_button.setText("Stop")
             self.restart_button.setEnabled(False)
             self.video_thread.start()
@@ -241,19 +328,26 @@ class App(QMainWindow):
             print('Video Detenido')
             self.start_stop_button.setText("Start")
             self.restart_button.setEnabled(True)
-            #print('vector de tiempos:', self.video_thread.get_steps_times())
-            record_id = self.get_lastid(self.video_thread.get_steps_times())
-            #vector_save = {"Step " + str(i) +" Duration":"{:.2f}".format(v) for i,v in enumerate(self.video_thread.get_steps_times())}
-            vector_save = {"Step " + str(step) + " Duration": "{:.2f}".format(v) for step, v in zip(self.real_steps, self.video_thread.get_steps_times())}
-            vector_save['Total Time']=sum(self.video_thread.get_steps_times())
+
+            self.record_id = self.get_lastid(self.video_thread.get_steps_times())
+            
+            trafficlight_color = [1 if time > 2 else 0 for time in self.video_thread.get_steps_times()[:-1]]
+            self.update_traffic_lights('green' if sum(trafficlight_color)>=6 else 'red')
+            vector_save = {"Step " + steps_map[i+1] +" Duration":"{:.2f}".format(v) for i,v in enumerate(self.video_thread.get_steps_times())}
+            vector_save['Total Time']=sum(self.video_thread.get_steps_times()[:-1])
             
             if self.current_frame is not None:
                 #HAY QUE TENER EN ESTE ScRIPTS DATOS GLOBALES MIENTRAS SE CAPTURA LA IMAGEN, Y AQUI ES CUANDO SE MUESTRAN EN LA TABLA
-                self.update_statistics(vector_save,record_id)
+                self.update_statistics(vector_save,self.record_id)
+
+    def save_video(self):
+        self.video_thread.save_recording(os.path.join(app_path, 'DataBase'),self.record_id)
+        self.record_id=None
 
     def restart(self):
         self.video_thread.stop()
-        self.video_thread = VideoThread(model_path)  # Recreate video thread to ensure fresh start
+        self.update_traffic_lights('')
+        self.video_thread = VideoThread(model_path,app_path)  # Recreate video thread to ensure fresh start
         self.video_thread.set_source(self.video_source) #Lo crea con la configuracion anterior
         self.video_thread.change_pixmap_signal.connect(self.update_image)
         self.table_widget.setRowCount(0)
@@ -261,7 +355,8 @@ class App(QMainWindow):
     
     def restart_on_change(self):
         self.video_thread.stop()
-        self.video_thread = VideoThread(model_path)  # Recreate video thread to ensure fresh start
+        self.record_id=None
+        self.video_thread = VideoThread(model_path, app_path)  # Recreate video thread to ensure fresh start
         self.video_thread.change_pixmap_signal.connect(self.update_image)
         self.table_widget.setRowCount(0)
         self.image_label.clear()
@@ -293,7 +388,18 @@ class App(QMainWindow):
         cursor = conn.cursor()
         # Insertar el nuevo registro en la tabla
         cursor.execute('''
-            INSERT INTO my_table (date_time, Step_1, "Step_2.1","Step_2.2", Step_3, "Step_4.1", "Step_4.2", "Step_5.1", "Step_5.2", "Step_6.1", "Step_6.2", Step_7)
+            INSERT INTO my_table (date_time,
+                                    Step_1,
+                                    Step_2_1,
+                                    Step_2_2,
+                                    Step_3,
+                                    Step_4_1,
+                                    Step_4_2,
+                                    Step_5_1,
+                                    Step_5_2,
+                                    Step_6_1,
+                                    Step_6_2,
+                                    No_Step)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (date_time,*values))
         

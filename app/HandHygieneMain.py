@@ -135,8 +135,8 @@ class HandHygineModel:
         else:
             #pred = self.step_prediction_model.predict(normalized_points.reshape(1,-1))[0]
             class_probabilities = self.step_prediction_model.predict_proba(normalized_points)[0]
-            if np.max(class_probabilities) < 0.25:
-                return None
+            if np.max(class_probabilities) < 0.4:
+                return 10 #significa que no hay valor
             argmax_class = np.argmax(class_probabilities)
             self.frames_prediction.appendleft(argmax_class)
             mode = Counter(self.frames_prediction).most_common(1)[0][0]
