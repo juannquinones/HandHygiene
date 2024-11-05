@@ -1,4 +1,3 @@
-
 # Proyecto de Verificación de Higiene de Manos
 
 ## Descripción
