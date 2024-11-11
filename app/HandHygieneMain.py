@@ -4,47 +4,6 @@ import numpy as np
 import cv2
 from collections import Counter, deque
 
-def get_videos_path(root_folder):
-    '''
-    Function to get all the video paths that are in certain root_folder organized using Stepx folders.
-    Parameters
-    ----------
-    root_folder:str
-        The root folder containing the Stepx organized folders.
-
-    Returns
-    ----------
-    video_paths: list 
-        A list of lists where each inner list contains the step number and the corresponding video path.
-    '''
-    # Regular expression to extract step folder number
-    step_regex = re.compile(r'step(\d+)', flags=re.IGNORECASE)  
-    video_paths = []
-
-    if not os.path.exists(root_folder):
-        print(f"Error: The folder {root_folder} does not exist.")
-        return
-
-    # Traverse through the root folder
-    for folder_name in os.listdir(root_folder):
-        folder_path = os.path.join(root_folder, folder_name)
-
-        # Check if it's a directory and named "step"
-        if os.path.isdir(folder_path) and step_regex.search(folder_name.lower()):
-            print(f"Reading files in {folder_path}:")
-
-            match = step_regex.search(folder_name)
-            step_number = int(match.group(1)) if match else None
-
-            # Traverse through the "step" folder
-            for file_name in os.listdir(folder_path):
-                file_path = os.path.join(folder_path, file_name)
-
-                # Check if it's a file and has a ".mp4" extension
-                if os.path.isfile(file_path) and file_name.lower().endswith(".mp4"):
-                    #print(f"Reading {file_path}:")
-                    video_paths.append([step_number,file_path])
-    return video_paths
 
 class HandHygineModel:
     def __init__(self,mp_drawing, mp_drawing_styles, mp_hands, hands, step_prediction_model=None):
@@ -140,9 +99,6 @@ class HandHygineModel:
             argmax_class = np.argmax(class_probabilities)
             self.frames_prediction.appendleft(argmax_class)
             mode = Counter(self.frames_prediction).most_common(1)[0][0]
-            #pred = improve_prediction(self.frames_prediction,class_probabilities)
-            #if class_probabilities < 0.1:
-             #   pred = "Nan"
         return mode
 
     def get_controids(self,hand_rows):

@@ -46,7 +46,6 @@ class VideoThread(QThread):
         self.hand_model = HandHygineModel(self.mp_drawing, self.mp_drawing_styles, self.mp_hands, self.hands, self.model)#, step_prediction_model=self.modelo)
 
         # Variables de la clase dinamicas
-        self.step_id =[1,2,3,4,5,6,'No Step']
         self.step_time =[0,0,0,0,0,0,0,0,0,0,0]
         self.video_start_time = time.time()
         self.last_prediction = 11
