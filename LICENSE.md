@@ -1,23 +1,13 @@
+# MIT License
 
-# Licencia
+Copyright (c) [2024] [Juan Nicolas Quiñones Romero, Andres Felipe Romero Gomez]
 
-Este proyecto, "Proyecto de Verificación de Higiene de Manos", es de libre acceso y se puede utilizar bajo los siguientes términos y condiciones:
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
-## Derechos de Autor (C) [2023] [Juan Nicolas Quiñones Romero, Andrés Felipe Romero]
+1. **Attribution**: All copies or substantial portions of the Software must include this license notice, with clear attribution to the original author(s).
 
-Juan Nicolas Quiñones Romero
-Andrés Felipe Romero
+2. **Commercial Use**: Commercial use of this Software is permitted under this license.
 
-Se concede permiso a cualquier persona para utilizar este software para cualquier propósito, incluyendo aplicaciones comerciales, y para alterarlo y redistribuirlo libremente, sujeto a las siguientes restricciones:
+3. **Third-Party Libraries**: This Software may include or depend on third-party libraries, each of which maintains its own licensing terms and copyright. Use of those libraries is subject to their respective licenses, which may include restrictions on use, modification, or distribution beyond those outlined in this license. Users are responsible for complying with all applicable third-party licenses.
 
-1. El origen de este software no debe ser tergiversado; no debe afirmarse que usted creó el software original. Si utiliza este software en un producto, un reconocimiento en la documentación del producto sería apreciado pero no es requerido.
-
-2. Las versiones alteradas deben estar claramente marcadas como tales, y no deben ser tergiversadas como el software original.
-
-3. Este aviso no debe ser eliminado o alterado de ninguna distribución.
-
-ESTE SOFTWARE SE PROPORCIONA "TAL CUAL", SIN GARANTÍA DE NINGÚN TIPO, EXPRESA O IMPLÍCITA, INCLUYENDO PERO NO LIMITADO A LAS GARANTÍAS DE COMERCIALIZACIÓN, APTITUD PARA UN PROPÓSITO PARTICULAR Y NO INFRACCIÓN. EN NINGÚN CASO LOS AUTORES SERÁN RESPONSABLES POR CUALQUIER RECLAMACIÓN, DAÑOS U OTRA RESPONSABILIDAD, YA SEA EN UNA ACCIÓN DE CONTRATO, AGRAVIO O DE OTRA MANERA, DERIVADOS DE, FUERA DE O EN CONEXIÓN CON EL SOFTWARE O EL USO U OTROS TRATOS EN EL SOFTWARE.
-
-## Licencia Adicional
-
-Para uso no comercial: Este software y sus derivados no pueden ser utilizados con fines comerciales sin el permiso expreso de los titulares de derechos de autor.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
