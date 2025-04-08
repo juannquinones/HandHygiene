@@ -47,7 +47,7 @@ We appreciate all contributors who have invested their time and effort in improv
 
 This project is licensed for free and non-commercial use. We are working on providing a proper license. In the meantime, please refer to the LICENSE.md file for more details.
 
-## Estado del Proyecto
+## Project Status
 
 This project is in its initial version (v1.0.0) and is under continuous development. To see the latest updates, visit the Releases section.
 [Releases](https://github.com/juannquinones/HigieneManos/tree/main/Releases)
