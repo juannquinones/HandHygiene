@@ -23,7 +23,7 @@ git clone git@github.com:juannquinones/HigieneManos.git
 
 To use this model, follow these instructions:
 
-Position the camera for a top-down view of the hands (see Figure 1b in the paper[here](https://doi.org/10.1016/j.cegh.2025.101971]).
+Position the camera for a top-down view of the hands (see Figure 1b in the paper[here](https://doi.org/10.1016/j.cegh.2025.101971]) )
 
 Run python hand_hygiene.py to start the detection process.
 
